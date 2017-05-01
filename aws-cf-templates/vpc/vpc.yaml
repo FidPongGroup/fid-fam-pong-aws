@@ -1,0 +1,406 @@
+# This is a Cloud Formation template that specifies the Creation of the Fid pong VPC and its associated
+# Security Groups
+
+# Note: this is rough draft, and we will refine it as we go
+
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: fid-pong VPC Cloud Formation Template
+Resources:
+
+  # Our Virtual private cloud, where all VMs and non managed services will be hosted
+  vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      InstanceTenancy: default
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      Tags:
+      - Key: Name
+        Value: fid-pong-DEV
+  # VPCs are made up of subnets, subnets can be both prublic and private, we want one
+  # public subnet in each availability zone inside of Region: us-east-1
+
+  # There are 5 availability zones, therefore we want 5 subnets
+  publicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.0.0/24
+      AvailabilityZone: us-east-1a
+      VpcId:
+        Ref: vpc
+      Tags:
+      - Key: Name
+        Value: 10.0.0-pub-a
+  publicSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: us-east-1b
+      VpcId:
+        Ref: vpc
+      Tags:
+      - Key: Name
+        Value: 10.0.2-pub-b
+  publicSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.4.0/24
+      AvailabilityZone: us-east-1c
+      VpcId:
+        Ref: vpc
+      Tags:
+      - Key: Name
+        Value: 10.0.4-pub-c
+  publicSubnetD:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.6.0/24
+      AvailabilityZone: us-east-1d
+      VpcId:
+        Ref: vpc
+      Tags:
+      - Key: Name
+        Value: 10.0.6-pub-d
+  publicSubnetE:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.10.0/24
+      AvailabilityZone: us-east-1e
+      VpcId:
+        Ref: vpc
+      Tags:
+      - Key: Name
+        Value: 10.0.10-pub-e
+
+  # Our VPC needs an endpoint to connect out to the Internet, we use AWS internet gateways to accomplish this
+  # Gateways are highly available and have high throughput, so only 1 is needed (or possible)
+  internetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Comments
+        Value: An Internet Gateway to allow communication out of the VPC to the Internet
+      - Key: Creator
+        Value: Josh
+      - Key: Name
+        Value: fid-pong-gateway-DEV
+  # DHCP (Dynamic Host Configuration Protocol) Option Set for the VPC
+  dhcpOpts:
+    Type: AWS::EC2::DHCPOptions
+    Properties:
+      DomainName: ec2.internal
+      DomainNameServers:
+      - AmazonProvidedDNS
+  # Like a Firewall, an Access Control List determines what type of network traffic can enter/leave subnet
+  AccessControlList:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId:
+        Ref: vpc
+      Tags:
+      - Key: Comments
+        Value: An ACL that allows HTTP, HTTPS, SSL, and MySQL communication out of
+          VPC
+      - Key: Name
+        Value: fid-pong-acl-DEV
+      - Key: Creator
+        Value: Josh
+  # Route table directs traffic inside of VPC (i.e. internal traffic or traffic to internet?)
+  routeTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: vpc
+      Tags:
+      - Key: Creator
+        Value: Josh
+      - Key: Name
+        Value: fid-pong-router-DEV
+      - Key: Comments
+        Value: A routing table that routes internal IPv4 traffic within the subnet,
+          and all other traffic to the internet gateway
+
+  # Security Groups Used by EC2 Instances
+
+  # Allow MySQL Traffic in
+  mySqlTrafficGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Allows MySql traffic to a RDS instance
+        VpcId: vpc-2b5f454d
+        Tags:
+        - Key: Name
+          Value: MySqlTrafficGroup
+
+  # Allow SSH Traffic in
+  sshTrafficGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allows SSH traffic to an ECS instance
+      VpcId: vpc-2b5f454d
+      Tags:
+      - Key: Name
+        Value: MySshTrafficGroup
+  webTrafficGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: group that allows HTTP and HTTPS traffic access to EC2 instances
+      VpcId: vpc-2b5f454d
+      Tags:
+      - Key: Name
+        Value: WebTrafficGroup
+  ingress3:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: mySqlTrafficGroup
+      IpProtocol: tcp
+      FromPort: '3306'
+      ToPort: '3306'
+      CidrIp: 0.0.0.0/0
+  ingress4:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: sshTrafficGroup
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      CidrIp: 0.0.0.0/0
+  ingress5:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: webTrafficGroup
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      CidrIp: 0.0.0.0/0
+  ingress6:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: webTrafficGroup
+      IpProtocol: tcp
+      FromPort: '443'
+      ToPort: '443'
+      CidrIp: 0.0.0.0/0
+  egress3:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: mySqlTrafficGroup
+      IpProtocol: "-1"
+      CidrIp: 0.0.0.0/0
+  egress4:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: sshTrafficGroup
+      IpProtocol: "-1"
+      CidrIp: 0.0.0.0/0
+  egress5:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Ref: webTrafficGroup
+      IpProtocol: "-1"
+      CidrIp: 0.0.0.0/0
+  # Rules for the Access Control List, control inbound and outbound traffic
+
+  # Outgoing HTTP Traffic (port 80) is allowed
+  aclRule1:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Egress: 'true'
+      Protocol: '6'
+      RuleAction: allow
+      RuleNumber: '100'
+      PortRange:
+        From: '80'
+        To: '80'
+      NetworkAclId:
+        Ref: AccessControlList
+
+  # Outgoing HTTPS Traffic (port 443) is allowed
+  aclRule2:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Egress: 'true'
+      Protocol: '6'
+      RuleAction: allow
+      RuleNumber: '200'
+      PortRange:
+        From: '443'
+        To: '443'
+      NetworkAclId:
+        Ref: AccessControlList
+  # Outgoing SSH Traffic (port 22) is allowed
+  # Please note that this may change later when the architecture is more solidified
+  aclRule3:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      Egress: 'true'
+      Protocol: '6'
+      RuleAction: allow
+      RuleNumber: '300'
+      PortRange:
+        From: '22'
+        To: '22'
+      NetworkAclId:
+        Ref: AccessControlList
+  # Outgoing Traffic from Ephemeral Ports are allowed
+  # I don't want to explain what those are, so I'll just include an AWS link
+  # http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_ACLs.html#VPC_ACLs_Ephemeral_Ports
+  aclRule4:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Egress: 'true'
+      Protocol: '6'
+      RuleAction: allow
+      RuleNumber: '400'
+      PortRange:
+        From: '49152'
+        To: '65535'
+      NetworkAclId:
+        Ref: AccessControlList
+  # Incoming HTTP (port 80) Traffic is allowed
+  aclRule5:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Protocol: '6'
+      RuleAction: allow
+      RuleNumber: '100'
+      PortRange:
+        From: '80'
+        To: '80'
+      NetworkAclId:
+        Ref: AccessControlList
+  # Incoming HTTPS (port 443) Traffic is allowed
+  aclRule6:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Protocol: '6'
+      RuleAction: allow
+      RuleNumber: '200'
+      PortRange:
+        From: '443'
+        To: '443'
+      NetworkAclId:
+        Ref: AccessControlList
+  # Incoming MySQL (port 3306) Traffic is allowed
+  aclRule7:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Protocol: '6'
+      RuleAction: allow
+      RuleNumber: '300'
+      PortRange:
+        From: '3306'
+        To: '3306'
+      NetworkAclId:
+        Ref: AccessControlList
+  # Incoming SSH (port 22) Traffic is allowed
+  aclRule8:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Protocol: '6'
+      RuleAction: allow
+      RuleNumber: '400'
+      PortRange:
+        From: '22'
+        To: '22'
+      NetworkAclId:
+        Ref: AccessControlList
+  # Incoming Ephemeral port Traffic is allowed
+  # I don't want to explain what those are, so I'll just include an AWS link
+  # http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_ACLs.html#VPC_ACLs_Ephemeral_Ports
+  aclRule9:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Protocol: '6'
+      RuleAction: allow
+      RuleNumber: '500'
+      PortRange:
+        From: '49152'
+        To: '65535'
+      NetworkAclId:
+        Ref: AccessControlList
+
+  # Subnet's must be associated to our Access Control List
+  # Our 5 Subnets are all public, so no problem associating them with the Access control list
+  subnetacl1:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      NetworkAclId:
+        Ref: AccessControlList
+      SubnetId:
+        Ref: publicSubnetC
+  subnetacl2:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      NetworkAclId:
+        Ref: AccessControlList
+      SubnetId:
+        Ref: publicSubnetA
+  subnetacl3:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      NetworkAclId:
+        Ref: AccessControlList
+      SubnetId:
+        Ref: publicSubnetE
+  subnetacl4:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      NetworkAclId:
+        Ref: AccessControlList
+      SubnetId:
+        Ref: publicSubnetB
+  subnetacl5:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      NetworkAclId:
+        Ref: AccessControlList
+      SubnetId:
+        Ref: publicSubnetD
+  # Attach our Internet Gateway to the VPC so VPC has internet access
+  gw1:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: vpc
+      InternetGatewayId:
+        Ref: internetGateway
+  # Rules for the Route Table:
+  # Our router has only one non standard goal,
+  # route traffic not going to instances inside VPC to Internet Gateway
+  route1:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      RouteTableId:
+        Ref: routeTable
+      GatewayId:
+        Ref: internetGateway
+    DependsOn: gw1
+  # DHCP Option Set domain name configuration
+  # Just going with Amazon's default configuration
+  dchpassoc1:
+    Type: AWS::EC2::VPCDHCPOptionsAssociation
+    Properties:
+      VpcId:
+        Ref: vpc
+      DhcpOptionsId:
+        Ref: dhcpOpts
