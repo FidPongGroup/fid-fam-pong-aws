@@ -1,4 +1,4 @@
-package com.fidfam.aws;
+package com.fidfam;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

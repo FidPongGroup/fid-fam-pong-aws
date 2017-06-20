@@ -1,4 +1,4 @@
-package com.fidfam.aws;
+package com.fidfam;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
