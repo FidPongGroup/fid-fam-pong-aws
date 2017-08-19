@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet author="josh" id="game_two_player-1">
+        <createTable tableName="game_two_player">
+            <column autoIncrement="true" name="id" type="INT UNSIGNED">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="player_one_id" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="player_two_id" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_time" type="datetime(6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="location" type="VARCHAR(45)"/>
+            <column defaultValueNumeric="0" name="player_one_score" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="0" name="player_two_score" remarks="Player 2 Score" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="11" name="game_point"
+                    remarks="The minimum score required by a player to win the game" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" remarks="date this row was inserted" type="datetime(6)"
+                    defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" remarks="Is this a current, active user" type="BOOL"
+                    defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="josh" id="game_two_player-2">
+        <createIndex indexName="date_cluster" tableName="game_two_player">
+            <column name="start_time"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="josh" id="game_two_player-3">
+        <createIndex indexName="player_1_id_foreign_key_idx" tableName="game_two_player">
+            <column name="player_one_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="josh" id="game_two_player-4">
+        <createIndex indexName="player_2_id_foreign_key_idx" tableName="game_two_player">
+            <column name="player_two_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="josh" id="game_two_player-5">
+        <addForeignKeyConstraint baseColumnNames="player_one_id" baseTableName="game_two_player"
+                                 constraintName="player_1_id_foreign_key" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="CASCADE" referencedColumnNames="id"
+                                 referencedTableName="player"/>
+    </changeSet>
+    <changeSet author="josh" id="game_two_player-6">
+        <addForeignKeyConstraint baseColumnNames="player_two_id" baseTableName="game_two_player"
+                                 constraintName="player_2_id_foreign_key" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="CASCADE" referencedColumnNames="id"
+                                 referencedTableName="player"/>
+    </changeSet>
+
+</databaseChangeLog>

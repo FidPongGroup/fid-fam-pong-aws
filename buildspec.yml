@@ -1,0 +1,10 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - mvn clean package
+artifacts:
+  files:
+    - fid-pong-db-web-app/target/*.jar
+  discard-paths: yes
