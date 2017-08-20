@@ -6,5 +6,5 @@ phases:
       - mvn clean package
 artifacts:
   files:
-    - fid-pong-db-web-app/target/*.jar
+    - fid-pong-web-app/target/*.jar
   discard-paths: yes
