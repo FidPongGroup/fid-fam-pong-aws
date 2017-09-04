@@ -36,8 +36,12 @@
                         <goals>
                             <goal>generateChangeLog</goal>
                         </goals>
-                        <configuration>
-                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>update-db</id>
+                        <goals>
+                            <goal>update</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

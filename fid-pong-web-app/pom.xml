@@ -70,8 +70,6 @@
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-			<scope>${run.local.dependencies}</scope>
-            <optional>true</optional>
 		</dependency>
         <dependency>
             <groupId>com.fidfam.aws</groupId>
