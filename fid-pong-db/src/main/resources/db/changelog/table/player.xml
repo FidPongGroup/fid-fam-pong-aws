@@ -19,7 +19,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="nickname" remarks="user nickname" type="VARCHAR(45)"/>
-            <column name="created_date" remarks="date this row was inserted" type="datetime(6)"
+            <column name="created_date" remarks="date this row was inserted" type="datetime"
                     defaultValueComputed="CURRENT_TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
