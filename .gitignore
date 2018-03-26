@@ -36,3 +36,5 @@ dist/
 nbdist/
 .nb-gradle/
 
+fid-pong-web-ui/node_modules
+fid-pong-web-app/infrastructure/.terraform

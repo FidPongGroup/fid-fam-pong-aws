@@ -1,0 +1,60 @@
+<mat-sidenav-container>
+  <mat-sidenav-content>
+
+    <div class="example-container mat-elevation-z8">
+      <mat-table [dataSource]="dataSource">
+
+        <!--- Note that these columns can be defined in any order.
+              The actual rendered columns are set as a property on the row definition" -->
+
+        <!-- Position Column -->
+        <ng-container matColumnDef="startTime">
+          <mat-header-cell *matHeaderCellDef> Start Time</mat-header-cell>
+          <mat-cell *matCellDef="let element"> {{element.startTime | date: 'short'}}</mat-cell>
+        </ng-container>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="player1Name">
+          <mat-header-cell *matHeaderCellDef> Player 1</mat-header-cell>
+          <mat-cell *matCellDef="let element">
+            <a (click)="selectedPlayer = element.playerOne; playerDetail.open()">{{displayName(element.playerOne)}}</a>
+          </mat-cell>
+        </ng-container>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="player1Score">
+          <mat-header-cell *matHeaderCellDef> Player 1 Score</mat-header-cell>
+          <mat-cell *matCellDef="let element">{{element.playerOneScore}}
+          </mat-cell>
+        </ng-container>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="player2Name">
+          <mat-header-cell *matHeaderCellDef> Player 2</mat-header-cell>
+          <mat-cell *matCellDef="let element">
+            <a (click)="selectedPlayer = element.playerTwo; playerDetail.open()">{{displayName(element.playerTwo)}}</a></mat-cell>
+        </ng-container>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="player2Score">
+          <mat-header-cell *matHeaderCellDef> Player 2 Score</mat-header-cell>
+          <mat-cell *matCellDef="let element"> {{element.playerTwoScore}}</mat-cell>
+        </ng-container>
+
+        <!-- Symbol Column -->
+        <ng-container matColumnDef="location">
+          <mat-header-cell *matHeaderCellDef> Location</mat-header-cell>
+          <mat-cell *matCellDef="let element"> {{element.location}}</mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+      </mat-table>
+    </div>
+
+  </mat-sidenav-content>
+  <mat-sidenav #playerDetail mode="side" opened="false" position="end">
+    <a (click)="playerDetail.close()">close</a>
+    <app-player-info [player]="selectedPlayer"></app-player-info>
+  </mat-sidenav>
+</mat-sidenav-container>
