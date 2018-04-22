@@ -12,3 +12,6 @@
 	path = fid-pong-web-app
 	url = https://github.com/jphelton/fid-pong-web-app.git
     branch = .
+[submodule "fid-pong-db"]
+	path = fid-pong-db
+	url = https://github.com/jphelton/fid-pong-db.git
