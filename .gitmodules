@@ -15,3 +15,7 @@
 [submodule "fid-pong-db"]
 	path = fid-pong-db
 	url = https://github.com/jphelton/fid-pong-db.git
+[submodule "fid-pong-parent"]
+	path = fid-pong-parent
+	url = https://github.com/jphelton/fid-pong-parent.git
+	branch = master
