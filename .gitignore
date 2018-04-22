@@ -38,3 +38,4 @@ nbdist/
 
 fid-pong-web-ui/node_modules
 fid-pong-web-app/infrastructure/.terraform
+fid-pong-web-ui-2
