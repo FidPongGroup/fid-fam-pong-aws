@@ -67,7 +67,7 @@ resource "aws_ecs_service" "web_service" {
   name = "${var.app_name}-${var.env}-service"
   task_definition = "${aws_ecs_task_definition.web_service_task.id}"
   cluster = "${data.terraform_remote_state.main_infastructure.ecs_cluster}"
-  desired_count = 1
+  desired_count = 2
 
   load_balancer {
     container_name = "nginx"

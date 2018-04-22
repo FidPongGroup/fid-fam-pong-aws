@@ -1,0 +1,3 @@
+[submodule "fid-pong-infrastructure"]
+	path = fid-pong-infrastructure
+	url = https://github.com/jphelton/fid-pong-infrastructure.git
